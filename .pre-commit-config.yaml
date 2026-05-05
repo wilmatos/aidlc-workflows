@@ -1,5 +1,47 @@
 repos:
+  # Markdown linting (all markdown files)
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.22.1
     hooks:
       - id: markdownlint-cli2
+
+  # --- AIDLC MCP Server hooks (scoped to aidlc-mcp-server/) ---
+
+  # Python code formatting
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        files: ^aidlc-mcp-server/
+        language_version: python3.12
+        args: [--line-length=100]
+
+  # Python linting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.9
+    hooks:
+      - id: ruff
+        files: ^aidlc-mcp-server/
+        args: [--fix, --exit-non-zero-on-fix]
+
+  # General file checks (scoped to MCP server)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        files: ^aidlc-mcp-server/
+      - id: end-of-file-fixer
+        files: ^aidlc-mcp-server/
+      - id: check-yaml
+        files: ^aidlc-mcp-server/
+      - id: check-json
+        files: ^aidlc-mcp-server/
+      - id: check-toml
+        files: ^aidlc-mcp-server/
+      - id: check-merge-conflict
+        files: ^aidlc-mcp-server/
+      - id: check-added-large-files
+        files: ^aidlc-mcp-server/
+        args: [--maxkb=1000]
+      - id: debug-statements
+        files: ^aidlc-mcp-server/
