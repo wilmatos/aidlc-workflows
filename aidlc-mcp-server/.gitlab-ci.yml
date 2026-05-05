@@ -1,0 +1,153 @@
+stages:
+  - test
+  - build
+  - publish
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip-cache"
+  PYTHON_VERSION: "3.13"
+
+# ---------------------------------------------------------------------------
+# Test — uses the bundled rules committed in aidlc_mcp_server/aidlc-rules/
+# ---------------------------------------------------------------------------
+test:
+  stage: test
+  image: python:${PYTHON_VERSION}-slim
+  cache:
+    key: pip-${CI_COMMIT_REF_SLUG}
+    paths:
+      - .pip-cache/
+  script:
+    - pip install -e ".[dev]"
+    - pytest --tb=short -q
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+lint:
+  stage: test
+  image: python:${PYTHON_VERSION}-slim
+  cache:
+    key: pip-${CI_COMMIT_REF_SLUG}
+    paths:
+      - .pip-cache/
+  script:
+    - pip install ruff
+    - ruff check aidlc_mcp_server/ tests/
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# ---------------------------------------------------------------------------
+# Build — syncs rules from monorepo root (local copy), then builds a wheel
+# with rules bundled as package data.
+# ---------------------------------------------------------------------------
+build:wheel:
+  stage: build
+  image: python:${PYTHON_VERSION}-slim
+  before_script:
+    - pip install -e ".[dev]" build
+  script:
+    # Sync rules from monorepo root and run tests
+    - ./scripts/sync-and-test-rules.sh
+    # Build wheel + sdist (wheel includes bundled rules as package data)
+    - python -m build --wheel --sdist
+    # Verify rules are included in the wheel
+    - python -c "import zipfile, glob; whl=glob.glob('dist/*.whl')[0]; names=zipfile.ZipFile(whl).namelist(); rules=[n for n in names if 'aidlc-rules' in n]; print(f'Bundled {len(rules)} rule files in wheel'); assert len(rules) > 0, 'No rules found in wheel!'"
+    # Build manifest with version provenance
+    - |
+      cat > dist/BUILD_INFO <<EOF
+      server_version=$(python -c "from aidlc_mcp_server import __version__; print(__version__)")
+      rules_source=monorepo-local
+      rules_commit=$(grep '^monorepo_commit=' aidlc-rules/.sync-metadata | cut -d= -f2)
+      build_pipeline=$CI_PIPELINE_ID
+      build_commit=$CI_COMMIT_SHA
+      EOF
+    - cat dist/BUILD_INFO
+  artifacts:
+    paths:
+      - dist/
+      - aidlc-rules/.sync-metadata
+    expire_in: 30 days
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+/
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+build:docker:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  needs:
+    - build:wheel
+  when: manual
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - |
+      SERVER_VER=$(grep '__version__' aidlc_mcp_server/__version__.py \
+        | head -1 | grep -o '"[^"]*"' | tr -d '"')
+      RULES_COMMIT=$(grep '^monorepo_commit=' aidlc-rules/.sync-metadata | cut -d= -f2)
+    - >
+      docker build
+      --label "org.opencontainers.image.version=$SERVER_VER"
+      --label "org.opencontainers.image.revision=$CI_COMMIT_SHA"
+      --label "com.aidlc.rules.commit=$RULES_COMMIT"
+      --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+      --tag $CI_REGISTRY_IMAGE:$SERVER_VER
+      .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    - docker push $CI_REGISTRY_IMAGE:$SERVER_VER
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG $CI_REGISTRY_IMAGE:latest
+        docker push $CI_REGISTRY_IMAGE:latest
+      fi
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+/
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# ---------------------------------------------------------------------------
+# Publish — version tags only
+# ---------------------------------------------------------------------------
+publish:pypi:
+  stage: publish
+  image: python:${PYTHON_VERSION}-slim
+  dependencies:
+    - build:wheel
+  script:
+    - pip install twine
+    - cat dist/BUILD_INFO
+    - >
+      TWINE_PASSWORD=${CI_JOB_TOKEN}
+      TWINE_USERNAME=gitlab-ci-token
+      python -m twine upload
+      --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
+      dist/*.whl dist/*.tar.gz
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+/
+
+publish:release:
+  stage: publish
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  dependencies:
+    - build:wheel
+  script:
+    - cat dist/BUILD_INFO
+  release:
+    tag_name: $CI_COMMIT_TAG
+    name: "AIDLC MCP Server $CI_COMMIT_TAG"
+    description: |
+      Server version: $CI_COMMIT_TAG
+      Rules are bundled inside the wheel — install with pip or run with uvx.
+      Rules provenance: see dist/BUILD_INFO artifact for details.
+      Docker: $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+    assets:
+      links:
+        - name: "Python wheel"
+          url: "${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/download?job=build:wheel"
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+/
