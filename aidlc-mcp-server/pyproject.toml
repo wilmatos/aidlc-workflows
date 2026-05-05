@@ -1,0 +1,220 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aidlc-mcp-server"
+dynamic = ["version"]
+description = "AI Development Life Cycle MCP Server with FastMCP framework"
+authors = [
+    {name = "AI-DLC Team", email = "wilmatos@amazon.com"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.12"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Code Generators",
+]
+keywords = ["mcp", "ai", "development", "lifecycle", "workflow", "code-generation"]
+
+dependencies = [
+    "fastmcp>=2.11.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "pytest-asyncio>=0.21.0",
+    "hypothesis>=6.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+    "bandit>=1.7.0",
+    "safety>=2.3.0",
+]
+
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "pytest-asyncio>=0.21.0",
+    "hypothesis>=6.0.0",
+]
+
+[project.urls]
+Homepage = "https://gitlab.aws.dev/wilmatos/aidlc-mcp-server"
+Repository = "https://gitlab.aws.dev/wilmatos/aidlc-mcp-server"
+Documentation = "https://gitlab.aws.dev/wilmatos/aidlc-mcp-server/blob/main/README.md"
+Issues = "https://gitlab.aws.dev/wilmatos/aidlc-mcp-server/issues"
+
+[project.scripts]
+aidlc-mcp-server = "aidlc_mcp_server.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aidlc_mcp_server*"]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+aidlc_mcp_server = ["_build_info.py", "aidlc-rules/**/*.md", "aidlc-rules/.sync-metadata"]
+
+[tool.setuptools.dynamic]
+version = {attr = "aidlc_mcp_server.__version__.__version__"}
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.mypy]
+python_version = "3.12"
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+# Core test configuration - optimized for rapid development feedback (< 30 seconds)
+addopts = "-ra -q --strict-markers --strict-config -m 'not e2e and not performance and not reliability and not scalability and not slow and not property and not concurrency and not network and not filesystem and not memory_intensive and not stress'"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+# Core test markers - fast execution tests only
+markers = [
+    "asyncio: marks tests as async",
+    "unit: marks tests as unit tests (core functionality)",
+    "integration: marks tests as basic integration tests (core functionality)",
+    "smoke: marks tests as smoke tests (essential features)",
+    "property: marks tests as property-based tests (core services only)",
+    # Excluded markers - migrated to extended workspace
+    "e2e: marks tests as end-to-end tests (migrated to extended workspace)",
+    "performance: marks tests as performance tests (migrated to extended workspace)",
+    "security: marks tests as security tests (migrated to extended workspace)",
+    "concurrency: marks tests as concurrency tests (migrated to extended workspace)",
+    "slow: marks tests as slow tests (migrated to extended workspace)",
+    "network: marks tests requiring network access (migrated to extended workspace)",
+    "filesystem: marks tests with extensive file operations (migrated to extended workspace)",
+    "memory_intensive: marks tests using significant memory (migrated to extended workspace)",
+    "stress: marks tests as stress tests (migrated to extended workspace)",
+    "reliability: marks tests as reliability tests (migrated to extended workspace)",
+    "scalability: marks tests as scalability tests (migrated to extended workspace)"
+]
+
+# Core test execution configuration
+timeout = 30
+asyncio_mode = "auto"
+
+# Test discovery - exclude extended test directories
+collect_ignore = [
+    "setup.py",
+    "tests/e2e",
+    "tests/performance", 
+    "tests/security",
+    "tests/reliability",
+    "tests/scalability"
+]
+
+# Warnings configuration - suppress non-critical warnings for speed
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    "ignore::pytest.PytestUnknownMarkWarning",
+    "error::UserWarning"
+]
+
+[tool.coverage.run]
+source = ["aidlc_mcp_server"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/main.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+show_missing = true
+precision = 2
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101", "B601", "B110"]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.17.1",
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.1.0",
+    "pytest-cov>=6.3.0",
+    "pytest-mock>=3.15.0",
+    "ruff>=0.12.12",
+]

@@ -1,0 +1,166 @@
+# =============================================================================
+# Python
+# =============================================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+sdist/
+wheels/
+*.egg
+*.egg-info/
+develop-eggs/
+eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Type checkers / linters
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+.pyre/
+.ruff_cache/
+
+# Testing / coverage
+.pytest_cache/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+cover/
+coverage.json
+coverage.xml
+nosetests.xml
+*.cover
+*.py,cover
+
+# Build tools
+.tox/
+.nox/
+.eggs/
+.installed.cfg
+.pybuilder/
+MANIFEST
+
+# =============================================================================
+# OS
+# =============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# =============================================================================
+# IDE / Editor
+# =============================================================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+auto-save-list
+tramp
+
+# =============================================================================
+# Kiro / AI assistants
+# =============================================================================
+.kiro/
+.amazonq/
+
+# =============================================================================
+# Project-specific
+# =============================================================================
+
+# Environment / secrets
+.env
+.env.local
+.secrets
+*.key
+!*.key.example
+*.pem
+
+# Runtime artifacts (user project data)
+aidlc-docs/
+audit/
+.aidlc/projects/
+
+# Temporary files
+tmp/
+tmp_files/
+*.tmp
+*.temp
+*.backup
+*.bak
+*.orig
+
+# Temporary analysis/summary markdown files (AI-generated)
+*_ANALYSIS.md
+*_SUMMARY.md
+*_IMPLEMENTATION.md
+*_STATUS.md
+*_REPORT.md
+*_RESULTS.md
+*_GUIDE.md
+*_FIX.md
+*_CLEANUP.md
+*_DRAFT.md
+*_TEMP.md
+*_WORKING.md
+*_COMPLETE.md
+*_CHECKLIST.md
+FIX_*.md
+POST_*.md
+MCP_SERVER_*.md
+PHASE_*.md
+STRATEGIC_*.md
+phase*context
+
+# Temporary test/verification scripts in root
+/test_*.py
+/verify_*.py
+/run_*.py
+
+# Archive directories
+.archive/
+archive/
+
+# Test workspaces / example output
+test_projects/
+test-ws/
+example-output/
+example-aidlc/
+
+# Logs
+*.log
+logs/
+
+# =============================================================================
+# Build artifacts (generated at build time, not committed)
+# =============================================================================
+aidlc_mcp_server/_build_info.py
+
+# Rules copied from monorepo root by scripts/sync-aidlc-rules.sh
+aidlc-rules/
+aidlc_mcp_server/aidlc-rules/

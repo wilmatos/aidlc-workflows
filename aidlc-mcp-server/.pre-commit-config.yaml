@@ -1,0 +1,95 @@
+# Pre-commit hooks for AIDLC MCP Server
+# Ensures code quality and prevents common issues
+
+repos:
+  # Python code formatting and linting
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        language_version: python3.12
+        args: [--line-length=100]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+
+  # Type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-PyYAML, types-requests]
+        args: [--strict, --ignore-missing-imports]
+
+  # Security scanning
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: [-r, aidlc_mcp_server/, -f, json, -o, bandit-report.json]
+        pass_filenames: false
+
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: debug-statements
+
+  # Custom hooks for MCP server specific validation
+  - repo: local
+    hooks:
+      # Import validation hook
+      - id: validate-imports
+        name: Validate Python imports
+        entry: python scripts/validate_imports.py
+        language: system
+        files: \.(py)$
+        pass_filenames: true
+
+      # API consistency check
+      - id: check-api-consistency
+        name: Check API consistency
+        entry: python scripts/check_api_consistency.py
+        language: system
+        files: ^(aidlc_mcp_server/tools/|aidlc_mcp_server/core/services/).*\.py$
+        pass_filenames: true
+
+      # Test validation
+      - id: validate-tests
+        name: Validate test structure
+        entry: python scripts/validate_tests.py
+        language: system
+        files: ^tests/.*\.py$
+        pass_filenames: true
+
+      # MCP tool validation
+      - id: validate-mcp-tools
+        name: Validate MCP tool definitions
+        entry: python scripts/validate_mcp_tools.py
+        language: system
+        files: ^aidlc_mcp_server/tools/.*\.py$
+        pass_filenames: true
+
+      # Quick test subset on critical changes
+      - id: quick-tests
+        name: Run quick test subset
+        entry: python scripts/run_quick_tests.py
+        language: system
+        files: ^(aidlc_mcp_server/core/|aidlc_mcp_server/tools/).*\.py$
+        pass_filenames: false
+
+# Configuration
+default_stages: [commit]
+fail_fast: false
+minimum_pre_commit_version: 3.0.0
