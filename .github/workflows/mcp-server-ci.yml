@@ -1,16 +1,7 @@
 name: MCP Server CI
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'aidlc-mcp-server/**'
-      - 'aidlc-rules/**'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'aidlc-mcp-server/**'
-      - 'aidlc-rules/**'
+  workflow_dispatch:
 
 defaults:
   run:
