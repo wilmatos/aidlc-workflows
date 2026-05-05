@@ -55,12 +55,14 @@ class Project:
         return json.loads(self.state_file.read_text(encoding="utf-8"))
 
     def save_state(self, state: dict[str, Any]) -> None:
-        """Save project state to disk."""
-        state["updated_at"] = _now()
+        """Save project state to disk atomically."""
+        to_write = {**state, "updated_at": _now()}
         self.state_file.parent.mkdir(parents=True, exist_ok=True)
-        self.state_file.write_text(
-            json.dumps(state, indent=2, default=str), encoding="utf-8"
+        tmp = self.state_file.with_suffix(".tmp")
+        tmp.write_text(
+            json.dumps(to_write, indent=2, default=str), encoding="utf-8"
         )
+        tmp.replace(self.state_file)
 
     def create(self, user_request: str, operational_mode: str) -> dict[str, Any]:
         """Create a new project with initial directory structure."""
@@ -161,8 +163,9 @@ class Project:
         entry += "\n---\n"
 
         self.audit_file.parent.mkdir(parents=True, exist_ok=True)
+        needs_header = not self.audit_file.exists() or self.audit_file.stat().st_size == 0
         with open(self.audit_file, "a", encoding="utf-8") as f:
-            if f.tell() == 0:
+            if needs_header:
                 f.write("# AIDLC Audit Log\n\n")
             f.write(entry)
 

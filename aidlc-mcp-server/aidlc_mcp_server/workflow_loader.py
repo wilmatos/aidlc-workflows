@@ -193,6 +193,7 @@ class WorkflowLoader:
         # Fall back to extra dirs in order
         for extra_dir in self._extra_extension_dirs:
             candidate = extra_dir / f"{name}.md"
+            ensure_within(candidate, extra_dir)
             if candidate.is_file():
                 return self._read_with_cache(candidate)
 
@@ -231,7 +232,7 @@ class WorkflowLoader:
                         desc = line[2:].strip()
                         break
                 extensions.append(
-                    {"name": rel_name, "description": desc, "path": str(f)}
+                    {"name": rel_name, "description": desc}
                 )
         return extensions
 

@@ -97,7 +97,6 @@ class TestWorkflowLoader:
         ext = extensions[0]
         assert "name" in ext
         assert "description" in ext
-        assert "path" in ext
         assert len(ext["description"]) > 0
 
     def test_get_extension_nested(self, loader):

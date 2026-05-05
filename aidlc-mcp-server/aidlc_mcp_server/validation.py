@@ -79,7 +79,7 @@ def ensure_within(path: Path, boundary: Path) -> Path:
     """Ensure a resolved path stays within a boundary directory."""
     resolved = path.resolve()
     boundary_resolved = boundary.resolve()
-    if not str(resolved).startswith(str(boundary_resolved) + "/") and resolved != boundary_resolved:
+    if not resolved.is_relative_to(boundary_resolved):
         raise ValueError("Path escapes allowed boundary.")
     return resolved
 
