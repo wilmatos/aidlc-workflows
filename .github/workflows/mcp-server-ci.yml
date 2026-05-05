@@ -1,0 +1,171 @@
+name: MCP Server CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'aidlc-mcp-server/**'
+      - 'aidlc-rules/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'aidlc-mcp-server/**'
+      - 'aidlc-rules/**'
+
+defaults:
+  run:
+    working-directory: aidlc-mcp-server
+
+jobs:
+  # Sync rules and run linting
+  code-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-mcp-pip-${{ hashFiles('aidlc-mcp-server/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-mcp-pip-
+
+    - name: Sync rules from monorepo root
+      run: ./scripts/sync-aidlc-rules.sh
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev]
+
+    - name: Run Ruff linting
+      run: ruff check aidlc_mcp_server tests
+
+    - name: Run MyPy type checking
+      run: mypy aidlc_mcp_server --strict --ignore-missing-imports
+
+  # Test suite across Python versions
+  test-suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        python-version: ['3.12', '3.13']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-mcp-pip-${{ matrix.python-version }}-${{ hashFiles('aidlc-mcp-server/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-mcp-pip-${{ matrix.python-version }}-
+          ${{ runner.os }}-mcp-pip-
+
+    - name: Sync rules from monorepo root
+      run: ./scripts/sync-aidlc-rules.sh
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev,test]
+
+    - name: Run unit tests with coverage
+      run: pytest --cov=aidlc_mcp_server --cov-report=xml --cov-report=term-missing
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      if: matrix.python-version == '3.12'
+      with:
+        file: aidlc-mcp-server/coverage.xml
+        flags: mcp-server
+        name: mcp-server-coverage
+
+  # Verify the MCP server starts correctly
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [code-quality]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Sync rules from monorepo root
+      run: ./scripts/sync-aidlc-rules.sh
+
+    - name: Install package
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+
+    - name: Test MCP server startup
+      run: |
+        timeout 30s python -c "
+        from aidlc_mcp_server import get_async_server
+        import asyncio
+
+        async def test_startup():
+            server = get_async_server()
+            print('✅ MCP server started successfully')
+            return True
+
+        asyncio.run(test_startup())
+        "
+
+  # Build validation (main branch only)
+  build-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [test-suite, integration]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Sync rules from monorepo root
+      run: ./scripts/sync-aidlc-rules.sh
+
+    - name: Install build tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+
+    - name: Build wheel
+      run: python -m build --wheel --sdist
+
+    - name: Verify rules are bundled in wheel
+      run: |
+        python -c "
+        import zipfile, glob
+        whl = glob.glob('dist/*.whl')[0]
+        names = zipfile.ZipFile(whl).namelist()
+        rules = [n for n in names if 'aidlc-rules' in n]
+        print(f'Bundled {len(rules)} rule files in wheel')
+        assert len(rules) > 0, 'No rules found in wheel!'
+        "
