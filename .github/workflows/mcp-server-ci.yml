@@ -113,15 +113,10 @@ jobs:
     - name: Test MCP server startup
       run: |
         timeout 30s python -c "
-        from aidlc_mcp_server import get_async_server
-        import asyncio
-
-        async def test_startup():
-            server = get_async_server()
-            print('✅ MCP server started successfully')
-            return True
-
-        asyncio.run(test_startup())
+        from aidlc_mcp_server.server import create_server
+        server = create_server()
+        print('✅ MCP server started successfully')
+        print(f'   Server name: {server.name}')
         "
 
   # Build validation (main branch only)
