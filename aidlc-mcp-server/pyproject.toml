@@ -51,10 +51,10 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://gitlab.aws.dev/wilmatos/aidlc-mcp-server"
-Repository = "https://gitlab.aws.dev/wilmatos/aidlc-mcp-server"
-Documentation = "https://gitlab.aws.dev/wilmatos/aidlc-mcp-server/blob/main/README.md"
-Issues = "https://gitlab.aws.dev/wilmatos/aidlc-mcp-server/issues"
+Homepage = "https://github.com/awslabs/aidlc-workflows/tree/main/aidlc-mcp-server"
+Repository = "https://github.com/awslabs/aidlc-workflows"
+Documentation = "https://github.com/awslabs/aidlc-workflows/tree/main/aidlc-mcp-server/README.md"
+Issues = "https://github.com/awslabs/aidlc-workflows/issues"
 
 [project.scripts]
 aidlc-mcp-server = "aidlc_mcp_server.main:main"

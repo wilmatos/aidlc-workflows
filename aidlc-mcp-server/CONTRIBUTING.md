@@ -19,10 +19,10 @@ Before contributing, please review our comprehensive steering rules that guide d
 
 ## Development Setup
 
-1. **Clone the repository**
+1. **Clone the monorepo**
    ```bash
-   git clone https://github.com/ai-dlc/aidlc-mcp-server.git
-   cd aidlc-mcp-server
+   git clone https://github.com/awslabs/aidlc-workflows.git
+   cd aidlc-workflows/aidlc-mcp-server
    ```
 
 2. **Create virtual environment**
@@ -31,8 +31,9 @@ Before contributing, please review our comprehensive steering rules that guide d
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
-3. **Install dependencies**
+3. **Sync rules and install dependencies**
    ```bash
+   ./scripts/sync-aidlc-rules.sh   # Copy rules from monorepo root
    pip install -e .[dev]
    ```
 
