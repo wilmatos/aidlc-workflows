@@ -52,7 +52,8 @@ class Project:
         """Load project state from disk."""
         if not self.state_file.is_file():
             raise FileNotFoundError(f"Project not found: {self.name}")
-        return json.loads(self.state_file.read_text(encoding="utf-8"))
+        data: dict[str, Any] = json.loads(self.state_file.read_text(encoding="utf-8"))
+        return data
 
     def save_state(self, state: dict[str, Any]) -> None:
         """Save project state to disk atomically."""

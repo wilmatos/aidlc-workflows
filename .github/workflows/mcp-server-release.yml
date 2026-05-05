@@ -1,9 +1,11 @@
-name: Release
+name: MCP Server Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: aidlc-mcp-server
 
 jobs:
   release:
@@ -16,6 +18,9 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
+
+    - name: Sync rules from monorepo root
+      run: ./scripts/sync-aidlc-rules.sh
 
     - name: Install dependencies
       run: |
@@ -34,5 +39,5 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
-        files: dist/*
+        files: aidlc-mcp-server/dist/*
         generate_release_notes: true

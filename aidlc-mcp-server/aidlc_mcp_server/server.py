@@ -307,7 +307,10 @@ def create_server(
 
             next_info = _next_stage(phase, stage)
             if next_info["stage"]:
-                project.update_stage(next_info["phase"], next_info["stage"], "not_started")
+                next_phase = next_info["phase"]
+                next_stage = next_info["stage"]
+                assert isinstance(next_phase, str) and isinstance(next_stage, str)
+                project.update_stage(next_phase, next_stage, "not_started")
 
             return {
                 "success": True,
