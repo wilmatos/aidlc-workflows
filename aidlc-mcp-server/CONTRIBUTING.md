@@ -20,18 +20,21 @@ Before contributing, please review our comprehensive steering rules that guide d
 ## Development Setup
 
 1. **Clone the monorepo**
+
    ```bash
    git clone https://github.com/awslabs/aidlc-workflows.git
    cd aidlc-workflows/aidlc-mcp-server
    ```
 
 2. **Create virtual environment**
+
    ```bash
    python -m venv .venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
 3. **Sync rules and install dependencies**
+
    ```bash
    ./scripts/sync-aidlc-rules.sh   # Copy rules from monorepo root
    pip install -e .[dev]
@@ -92,6 +95,7 @@ python tmp_files/system_cleanup_script.py
 ```
 
 **Essential Files Preserved**:
+
 - `test_simplified_tools.py` - Core functionality test
 - `final_checkpoint_validation.py` - System validation
 - `system_cleanup_script.py` - The cleanup script itself
@@ -120,6 +124,7 @@ python scripts/migrate_property_security_tests.py
 ```
 
 This migrates:
+
 - 16 property-based tests (hypothesis-driven validation)
 - 1 security test (comprehensive input validation)
 - 1 concurrent operations test (scalability validation)
@@ -130,6 +135,7 @@ See [Property-Security Test Migration Guide](docs/guides/property-security-test-
 ## Pull Request Process
 
 1. **Create a feature branch**
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -140,6 +146,7 @@ See [Property-Security Test Migration Guide](docs/guides/property-security-test-
    - Update documentation
 
 3. **Run quality gates**
+
    ```bash
    ./scripts/lint.sh
    ./scripts/test.sh
@@ -149,12 +156,15 @@ See [Property-Security Test Migration Guide](docs/guides/property-security-test-
    ```
 
 4. **Commit your changes**
+
    ```bash
    git commit -m "feat: add amazing feature"
    ```
+
    Use conventional commits format: `type(scope): description`
 
 5. **Push and create PR**
+
    ```bash
    git push origin feature/your-feature-name
    ```
@@ -169,7 +179,7 @@ See [Property-Security Test Migration Guide](docs/guides/property-security-test-
 
 Use conventional commits:
 
-```
+```text
 <type>(<scope>): <description>
 
 [optional body]

@@ -18,9 +18,10 @@ Please do not open a public issue or discuss the vulnerability in public forums.
 
 ### 2. Report Privately
 
-Send a detailed report to: **wilmatos@amazon.com**
+Send a detailed report to: **<wilmatos@amazon.com>**
 
 Include:
+
 - Description of the vulnerability
 - Steps to reproduce
 - Potential impact
@@ -89,11 +90,12 @@ When using AI-DLC MCP Server:
 ## Security Updates
 
 Security updates are released as patch versions (e.g., 2.1.1) and announced via:
+
 - GitHub Security Advisories
 - Release notes
 - CHANGELOG.md
 
 ## Contact
 
-For security concerns: security@aidlc.dev
-For general questions: team@aidlc.dev
+For security concerns: <security@aidlc.dev>
+For general questions: <team@aidlc.dev>

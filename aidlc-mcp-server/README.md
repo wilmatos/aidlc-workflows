@@ -65,14 +65,14 @@ Rules are bundled inside the package — no `cwd` or environment variables neede
 
 ## Tools
 
-| Tool | Purpose |
-|------|---------|
-| `aidlc_start_project` | Create a new project with operational mode |
-| `aidlc_get_guidance` | Load workflow/stage guidance dynamically |
-| `aidlc_complete_stage` | Save deliverable, advance to next stage |
-| `aidlc_list_projects` | List all projects in workspace |
-| `aidlc_log` | Append to project audit log |
-| `aidlc_manage_extensions` | List/read workflow extensions |
+| Tool                      | Purpose                                      |
+|---------------------------|----------------------------------------------|
+| `aidlc_start_project`     | Create a new project with operational mode   |
+| `aidlc_get_guidance`      | Load workflow/stage guidance dynamically     |
+| `aidlc_complete_stage`    | Save deliverable, advance to next stage      |
+| `aidlc_list_projects`     | List all projects in workspace               |
+| `aidlc_log`               | Append to project audit log                  |
+| `aidlc_manage_extensions` | List/read workflow extensions                |
 
 ## How It Works
 
@@ -87,9 +87,11 @@ Rules are bundled inside the package — no `cwd` or environment variables neede
 The AIDLC workflow has 3 phases with 13+ stages:
 
 **Inception** — Planning and requirements
+
 - Workspace Detection → Reverse Engineering → Requirements Analysis → User Stories → Workflow Planning → Application Design → Units Generation
 
 **Construction** — Design and implementation (per-unit loop)
+
 - Functional Design → NFR Requirements → NFR Design → Infrastructure Design → Code Generation → Build and Test
 
 **Operations** — Deployment and monitoring (placeholder)
@@ -142,6 +144,7 @@ scripts/
 ```
 
 The `aidlc-rules/` directory exists in two places:
+
 - **Repo root** (`aidlc-rules/`) — used during development, editable for hot-reload
 - **Inside the package** (`aidlc_mcp_server/aidlc-rules/`) — bundled into wheels for distribution
 
@@ -192,11 +195,11 @@ Both are baked into `_build_info.py` at build time by `scripts/generate-build-in
 
 ### Pipeline stages
 
-| Stage | Trigger | What it does |
-|-------|---------|--------------|
-| `test` | MR or push to main | Runs pytest + ruff with bundled rules |
-| `build` | Push to main or tag | Syncs rules from monorepo root, builds wheel + Docker image |
-| `release` | Git tag (e.g. `v1.2.0`) | Creates a GitLab release with artifacts |
+| Stage     | Trigger                 | What it does                                                |
+|-----------|-------------------------|-------------------------------------------------------------|
+| `test`    | MR or push to main      | Runs pytest + ruff with bundled rules                       |
+| `build`   | Push to main or tag     | Syncs rules from monorepo root, builds wheel + Docker image |
+| `release` | Git tag (e.g. `v1.2.0`) | Creates a GitLab release with artifacts                     |
 
 ### Creating a release
 
@@ -224,6 +227,7 @@ aidlc-mcp-server-1.2.0/
 ```
 
 The wheel includes the workflow rules as package data. Recipients can either:
+
 - Run `pip install *.whl` and then `aidlc-mcp-server`
 - Or use `uvx aidlc-mcp-server` if the package is published to PyPI
 
