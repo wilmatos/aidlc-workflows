@@ -233,4 +233,4 @@ The wheel includes the workflow rules as package data. Recipients can either:
 
 ## License
 
-MIT
+This project is licensed under the MIT-0 License. See the [LICENSE](LICENSE) file.
