@@ -9,3 +9,4 @@
 buildspec.yml
 codebuild_build.sh
 .env.local
+_AIDLC_MCP_WILMATOS
